@@ -20,8 +20,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	
     Texture backgroundImg;
     TextureRegion background;
-    Texture homeFrog;
-    Texture flyImg;
+    Texture homeFrog;    
 	Texture loseImg;
 	Texture levelImg;
 	Texture scoreImg;
@@ -29,8 +28,6 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	Texture titleImg;
 	Texture playImg;
 	Texture playAgainImg;
-	
-	
 	
 	Frog frog;
 	Fly fly;
@@ -62,9 +59,8 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		batch = new SpriteBatch();
 		
 		frog = new Frog(batch);
+		fly = new Fly(batch);
 		
-		fly = new Fly();
-		flyImg = new Texture(Gdx.files.internal("sprites/fly.png"));
 		homeFrog = new Texture(Gdx.files.internal("sprites/homeFrog.png"));
 		lifeImg = new Texture(Gdx.files.internal("sprites/life.png"));
 		loseImg = new Texture(Gdx.files.internal("text/lose.png"));
@@ -77,8 +73,6 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		
 		backgroundImg = new Texture(Gdx.files.internal("background.png"));
 		background = new TextureRegion(backgroundImg, 0, 0, 690, 785);
-		
-		
 
 		
 		hop = Gdx.audio.newSound(Gdx.files.internal("sounds/sound-frogger-hop.wav"));
@@ -134,11 +128,12 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	}
 
 	public void update () {
-		moveFrog();
 		
 		if (frog.dying()) {
 			 return;
 		}
+		
+		moveFrog();
 		
 		int endResult = frog.isAtHome(positions);
 		if (endResult < 5) {
@@ -158,7 +153,9 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 			}
 		}
 		else if (endResult == 5){
-			lives--;
+			plunk.play();
+			resetRound(true);
+			//lives--;
 		}
 		
 		if (ticks > 200) {
@@ -190,15 +187,15 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 			resetRound(true);
 		}
 		
-		if (frog.getX() < 0 - frog.getWidth() || frog.getX() > 690 - frog.getWidth()) {
+		if (frog.getX() < 0 - frog.getWidth()*3 || frog.getX() > 690 - frog.getWidth()) {
 			plunk.play();
 			resetRound(true);
 		}
 		
 		frog.draw();
+		fly.draw();
 		
 		batch.begin();
-        batch.draw(flyImg, fly.getPosition(), 630);
         for (int i = 0; i < wins.length; i++) {
         	if (wins[i]) {
         		batch.draw(homeFrog, positions[i], 630);
@@ -290,7 +287,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
         batch.draw(playAgainImg, 105, 125);
         batch.end();
         
-        if (Gdx.input.isKeyJustPressed(Keys.SPACE)){
+        if (Gdx.input.isKeyJustPressed(Keys.ENTER)){
         	resetGame();
         }
 	}

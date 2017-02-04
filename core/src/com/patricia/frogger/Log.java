@@ -16,7 +16,7 @@ public class Log {
 	private boolean headingRight; //true = right. false=left
 	private int x;
 	private int y;
-	Random rand = new Random(System.currentTimeMillis() );
+	private Random rand = new Random(System.currentTimeMillis() );
 	
 	public Log (int laneNum, int y, Batch batch, int logNum, int speed, int length) {
 		this.speed = speed; // pixel per frame

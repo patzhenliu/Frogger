@@ -17,7 +17,7 @@ public class Car {
 	private boolean headingRight; //true = right. false=left
 	private int x;
 	private int y;
-	Random rand = new Random(System.currentTimeMillis() );
+	private Random rand = new Random(System.currentTimeMillis() );
 	
 	public Car (int type, int y, Batch batch, int carNum, int speed) {
 		this.speed = speed; // pixel per frame

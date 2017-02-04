@@ -11,9 +11,9 @@ public class Frog {
 	private int y;
 	private int dyingSpeed;
 	private boolean isDead;
-	Sprite frogSprite;
-	Texture frogImg;
-	Texture deathImg;
+	private Sprite frogSprite;
+	private Texture frogImg;
+	private Texture deathImg;
 	
 	public Frog (Batch batch) {
 		this.batch = batch;
@@ -21,8 +21,6 @@ public class Frog {
 		frogImg = new Texture(Gdx.files.internal("sprites/frog.png"));
 		frogSprite = new Sprite(frogImg, 0, 0, 27, 29);
 		deathImg = new Texture(Gdx.files.internal("sprites/death.png"));
-		
-		
 		
 	}
 
@@ -42,7 +40,7 @@ public class Frog {
 	}
 	
 	public boolean isInWater () {
-		if (y >= 390) {
+		if (y >= 390 && y <= 630) {
 			return true;
 		}
 		
@@ -132,7 +130,7 @@ public class Frog {
 			if (dyingSpeed > 0) {
 				dyingSpeed--;
 				batch.begin();
-				batch.draw(deathImg, x - 20, y - 20);
+				batch.draw(deathImg, x, y);
 				batch.end();	
 			}
 			else {
