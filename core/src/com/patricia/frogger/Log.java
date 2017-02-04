@@ -18,22 +18,22 @@ public class Log {
 	private int y;
 	Random rand = new Random(System.currentTimeMillis() );
 	
-	public Log (int laneNum, int y, Batch batch, int logNum) {
-		speed = 2; // pixel per frame
+	public Log (int laneNum, int y, Batch batch, int logNum, int speed, int length) {
+		this.speed = speed; // pixel per frame
 		this.y = y;
 		this.batch = batch;
-		logImg = new Texture(Gdx.files.internal("log.png"));
+		logImg = new Texture(Gdx.files.internal("sprites/log.png"));
 		logSprite = new Sprite(logImg);
+		logSprite.setSize(length * 21, logSprite.getHeight());
 		
 		int randomSpace = rand.nextInt(100) + 200;
-		System.out.println(randomSpace);
 		
 		headingRight = (laneNum == 2 || laneNum == 4);		
 		
 		if(headingRight){
 			x = -10 + randomSpace * logNum;
 		}else{
-			speed *= -1;
+			this.speed *= -1;
 			x = 800 - randomSpace * logNum;
 		}
 	}
@@ -58,12 +58,13 @@ public class Log {
 		move();
 	}
 	
+	public int getSpeed () {
+		return speed;
+	}
+	
 	public boolean collide (Sprite frog){
-		Rectangle rect = new Rectangle(frog.getX() + 18, frog.getY() - 22, 26, 28);
-		Rectangle logRect = new Rectangle(logSprite.getX(), logSprite.getY(), logSprite.getWidth(), logSprite.getHeight() );
-		if (rect.overlaps(logRect)) {
-			System.out.println(frog.getX()+" "+ frog.getY()+" "+  logSprite.getX()+" "+  logSprite.getY());
-		}
+		Rectangle rect = new Rectangle(frog.getX() + 18, frog.getY() - 22, 15, 28);
+		Rectangle logRect = new Rectangle(logSprite.getX(), logSprite.getY() - logSprite.getHeight(), logSprite.getWidth(), logSprite.getHeight() );
 		return rect.overlaps(logRect);
 	}
 }

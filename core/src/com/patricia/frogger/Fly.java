@@ -1,6 +1,5 @@
 package com.patricia.frogger;
 
-import java.util.Arrays;
 import java.util.Random;
 
 public class Fly {
@@ -41,8 +40,7 @@ public class Fly {
 				positions[i] = positions[newIndex];
 			}
 		}
-	
-		System.out.println(Arrays.toString(positions));
+
 	}
 	
 }

@@ -8,21 +8,14 @@ public class Frog {
 		x = 332;
 		y = 47;
 	}
-	
-	public void drowned () {
-		if (isInWater()) {
-			newFrog();
-		}
-	}
+
 	
 	public int isAtHome (int[] homePositions) {
 		if (y >= 600) {
-			for (int p: homePositions) {
-				if (x - 14 == p) {
-					int index = (x - 44) / 144;
-					//System.out.println("win");
+			for (int i = 0; i < homePositions.length; i++) {
+				if (((x + 19) > (homePositions[i] - 20)) && ((x + 46) < (homePositions[i] + 77))) {
 					newFrog();
-					return index;
+					return i;
 				}
 			}
 			newFrog();
@@ -109,5 +102,9 @@ public class Frog {
 	
 	public int getY () {
 		return y;
+	}
+	
+	public void setOnLog (int speed) {
+		x += speed;
 	}
 }

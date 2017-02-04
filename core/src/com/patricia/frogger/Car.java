@@ -19,24 +19,23 @@ public class Car {
 	private int y;
 	Random rand = new Random(System.currentTimeMillis() );
 	
-	public Car (int type, int y, Batch batch, int carNum) {
-		speed = 5; // pixel per frame
+	public Car (int type, int y, Batch batch, int carNum, int speed) {
+		this.speed = speed; // pixel per frame
 		this.type = type;
 		this.y = y;
 		this.batch = batch;
-		String fileName = "car" + type + ".png";
+		String fileName = "sprites/car" + type + ".png";
 		carImg = new Texture(Gdx.files.internal(fileName));
 		carSprite = new Sprite(carImg);
 		
 		int randomSpace = rand.nextInt(100) + 200;
-		System.out.println(randomSpace);
 		
 		headingRight = (type == 1 || type == 5);		
 		
 		if(headingRight){
 			x = -10 + randomSpace * carNum;
 		}else{
-			speed *= -1;
+			this.speed *= -1;
 			x = 800 - randomSpace * carNum;
 		}
 	}
@@ -61,9 +60,9 @@ public class Car {
 		move();
 	}
 	
-	public boolean collide (Sprite object){
-		Rectangle rect = new Rectangle(object.getX() + 18, object.getY() - 22, 26, 28);
-		Rectangle carRect = new Rectangle(carSprite.getX(), carSprite.getY(), carSprite.getWidth(), carSprite.getHeight() );
+	public boolean collide (Sprite frog){
+		Rectangle rect = new Rectangle(frog.getX() + 18, frog.getY() - 22, 26, 28);
+		Rectangle carRect = new Rectangle(carSprite.getX(), carSprite.getY() - carSprite.getHeight(), carSprite.getWidth(), carSprite.getHeight() );
 		return rect.overlaps(carRect);
 	}
 	
