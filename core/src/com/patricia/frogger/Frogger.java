@@ -11,9 +11,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
@@ -27,7 +25,6 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	Texture loseImg;
 	Texture levelImg;
 	Texture scoreImg;
-	Texture deathImg;
 	Texture lifeImg;
 	Texture titleImg;
 	Texture playImg;
@@ -53,8 +50,6 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	int points;
 	int highScore;
 	int lives;
-	boolean facingLeft;
-	boolean facingDown;
 	boolean onStartMenu;
 	boolean[] wins;
 	int[] positions = {30, 174, 318, 462, 606};
@@ -72,7 +67,6 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		flyImg = new Texture(Gdx.files.internal("sprites/fly.png"));
 		homeFrog = new Texture(Gdx.files.internal("sprites/homeFrog.png"));
 		lifeImg = new Texture(Gdx.files.internal("sprites/life.png"));
-		deathImg = new Texture(Gdx.files.internal("sprites/death.png"));
 		loseImg = new Texture(Gdx.files.internal("text/lose.png"));
 		levelImg = new Texture(Gdx.files.internal("text/level.png"));
 		scoreImg = new Texture(Gdx.files.internal("text/score.png"));
@@ -115,40 +109,36 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	
 	public void moveFrog() {
 		if (Gdx.input.isKeyJustPressed(Keys.LEFT)){
-			frog.moveLeft(facingLeft, facingDown);			
+			frog.moveLeft();			
 			hop.play();
-			facingLeft = true;
-			facingDown = false;
 		}
 		
 		else if (Gdx.input.isKeyJustPressed(Keys.RIGHT)){
-			frog.moveRight(facingLeft, facingDown);
+			frog.moveRight();
 			hop.play();
-			facingLeft = false;
-			facingDown = false;
 		}
 		
 		else if (Gdx.input.isKeyJustPressed(Keys.UP)){
-			if (frog.moveUp(facingLeft, facingDown)) {
+			if (frog.moveUp()) {
 				points += 10;
 			}
 			hop.play();
-			facingLeft = false;
-			facingDown = false;
 		}
 		
 		else if (Gdx.input.isKeyJustPressed(Keys.DOWN)){
-			if (frog.moveDown(facingLeft, facingDown)) {
+			if (frog.moveDown()) {
 				points -= 10;
 			}
 			hop.play();
-			facingLeft = false;
-			facingDown = true;
 		}
 	}
 
 	public void update () {
 		moveFrog();
+		
+		if (frog.dying()) {
+			 return;
+		}
 		
 		int endResult = frog.isAtHome(positions);
 		if (endResult < 5) {
@@ -178,7 +168,8 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		frog.move();
 		
 		checkWin();
-		for (Car c: cars) {
+        
+        for (Car c: cars) {
 			c.draw();
 			if (c.collide(frog)) {
 				squash.play();
@@ -194,16 +185,31 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 				collided = true;
 			}			
 		}
-		
 		if (!collided && frog.isInWater()){
 			plunk.play();
 			resetRound(true);
 		}
 		
-		if (frog.getX() < 0 - (frog.getWidth()/2) || frog.getX() > 690 + (frog.getWidth()/2)) {
+		if (frog.getX() < 0 - frog.getWidth() || frog.getX() > 690 - frog.getWidth()) {
 			plunk.play();
 			resetRound(true);
 		}
+		
+		frog.draw();
+		
+		batch.begin();
+        batch.draw(flyImg, fly.getPosition(), 630);
+        for (int i = 0; i < wins.length; i++) {
+        	if (wins[i]) {
+        		batch.draw(homeFrog, positions[i], 630);
+        	}
+        }
+        
+        for (int i = 0; i < lives - 1; i ++) {
+        	batch.draw(lifeImg, i * 45 + 18, 10);
+        }
+        batch.end();
+		
 		
 		if (points > highScore) {
 			highScore = points;
@@ -222,7 +228,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 				startMenu();
 			}
 			
-			else if (lives > 0){
+			else if (lives > 0 || frog.getIsDead()){
 				if (checkWin()) {
 					resetLevel();
 				}
@@ -230,19 +236,9 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 				drawBackground();
 				
 				update();
-				
-				frog.draw();
+
 				
 				batch.begin();
-		        batch.draw(flyImg, fly.getPosition(), 630);
-		        for (int i = 0; i < wins.length; i++) {
-		        	if (wins[i]) {
-		        		batch.draw(homeFrog, positions[i], 630);
-		        	}
-		        }
-		        for (int i = 0; i < lives - 1; i ++) {
-		        	batch.draw(lifeImg, i * 45 + 18, 10);
-		        }
 		        drawNum(540, 13, time/30, false);
 		        drawNum(120, 720, points, true);
 		        drawNum(290, 720, highScore, true);
@@ -332,17 +328,13 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		return true;
 	}
 	
-	public void resetRound(boolean died) {
+	public void resetRound(boolean isDead) {
 		
-		if (died) {
-			batch.begin();
-			batch.draw(deathImg, frog.getX(), frog.getY());
-			batch.end();
-			
+		if (isDead) {
+			frog.die();			
 			lives--;
 		}
 		time = 60 * 30;
-		frog.newFrog();
 	}
 	
 	public void resetTicks () {
@@ -356,8 +348,6 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		time = 60 * 30;
 		lives = 3;
 		levelNum++;
-		facingLeft = false;
-		facingDown = false;
 		wins = new boolean[5];
 		
 		createObstacles();
@@ -368,8 +358,6 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		resetLevel();
 		points = 0;
 		levelNum= 1;
-		
-		createObstacles();
 		
 	}
 	

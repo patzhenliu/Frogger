@@ -9,14 +9,19 @@ public class Frog {
 	private Batch batch;
 	private int x;
 	private int y;
+	private int dyingSpeed;
+	private boolean isDead;
 	Sprite frogSprite;
 	Texture frogImg;
+	Texture deathImg;
 	
 	public Frog (Batch batch) {
 		this.batch = batch;
 		newFrog();
 		frogImg = new Texture(Gdx.files.internal("sprites/frog.png"));
 		frogSprite = new Sprite(frogImg, 0, 0, 27, 29);
+		deathImg = new Texture(Gdx.files.internal("sprites/death.png"));
+		
 		
 		
 	}
@@ -47,66 +52,37 @@ public class Frog {
 	public void newFrog () {
 		x = 332;
 		y = 65;
+		isDead = false;
+		dyingSpeed = 20;
 	}
 	
-	public void moveLeft (boolean facingLeft, boolean facingDown) {
+	public void moveLeft () {
 		frogSprite.setRotation(90f);
 		if (x - 72 > 0) {
 			x -= 72;
-			
-			/*if (!facingLeft){
-				y += 20;
-			}
-			if (facingDown){
-				y -= 20;
-				x += 25;
-			}*/
 		}
 	}
 	
-	public void moveRight (boolean facingLeft, boolean facingDown) {
+	public void moveRight () {
 		frogSprite.setRotation(270f);
 		if (x + 72 < 650){
 			x += 72;
-			/*if (facingLeft){
-				y -= 20;
-			}
-			if (facingDown){
-				if (y > 80){
-					y -= 20;
-				}
-				x += 25;
-			}*/
 		}
 	}
 	
-	public boolean moveUp (boolean facingLeft, boolean facingDown) {
+	public boolean moveUp () {
 		frogSprite.setRotation(0f);
 		if (y + 48 < 650){
 			y += 48;
-			/*if (facingLeft){
-				y -= 20;
-			}
-			if (facingDown){
-				y -= 20;
-				x += 25;
-			}*/
 			return true;
 		}
 		return false;
 	}
 	
-	public boolean moveDown (boolean facingLeft, boolean facingDown) {
+	public boolean moveDown () {
 		frogSprite.setRotation(180f);
-		if (y - 48 > 0){
+		if (y - 48 > 20){
 			y -= 48;
-			/*if (facingLeft){
-				y -= 20;
-			}
-			if (!facingDown){
-				y += 20;
-				x -= 25;
-			}*/
 			return true;
 		}
 		return false;
@@ -141,4 +117,32 @@ public class Frog {
 	public void setOnLog (int speed) {
 		x += speed;
 	}
+	
+	public boolean getIsDead () {
+		return isDead;
+	}
+	
+	public void die(){
+		isDead = true;
+	}
+	
+	public boolean dying () {
+		
+		if(isDead){
+			if (dyingSpeed > 0) {
+				dyingSpeed--;
+				batch.begin();
+				batch.draw(deathImg, x - 20, y - 20);
+				batch.end();	
+			}
+			else {
+				newFrog();
+			}
+			return true;
+			
+		}
+		return false;
+		
+	}
+	
 }
