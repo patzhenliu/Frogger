@@ -20,7 +20,7 @@ public class Frog {
 			for (int p: homePositions) {
 				if (x - 14 == p) {
 					int index = (x - 44) / 144;
-					System.out.println("win");
+					//System.out.println("win");
 					newFrog();
 					return index;
 				}

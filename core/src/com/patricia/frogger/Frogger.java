@@ -31,8 +31,9 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	Sprite frogSprite;
 	
 	Frog frog;
-	ArrayList<Car> cars;
 	Fly fly;
+	ArrayList<Car> cars;
+	ArrayList<Log> logs;
 	
 	Sound hop;
 	ShapeRenderer shapeRenderer;
@@ -58,6 +59,11 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		cars.addAll(createCarLane(3, 2));
 		cars.addAll(createCarLane(4, 3));
 		cars.addAll(createCarLane(5, 2));
+		//logs = createLogLane(1);
+		//logs.addAll(createLogLane(2));
+		//logs.addAll(createLogLane(3));
+		//logs.addAll(createLogLane(4));
+		//logs.addAll(createLogLane(5));
 		
 		fly = new Fly();
 		flyImg = new Texture(Gdx.files.internal("fly.png"));
@@ -99,7 +105,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		
 		if (Gdx.input.isKeyJustPressed(Keys.LEFT)){
 			frog.moveLeft(facingLeft, facingDown);
-			frogSprite.rotate(90f);
+			frogSprite.setRotation(90f);
 			hop.play();
 			facingLeft = true;
 			facingDown = false;
@@ -107,7 +113,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		
 		else if (Gdx.input.isKeyJustPressed(Keys.RIGHT)){
 			frog.moveRight(facingLeft, facingDown);
-			frogSprite.rotate(270f);
+			frogSprite.setRotation(270f);
 			hop.play();
 			facingLeft = false;
 			facingDown = false;
@@ -117,7 +123,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 			if (frog.moveUp(facingLeft, facingDown)) {
 				points += 10;
 			}
-			frogSprite.rotate(0f);
+			frogSprite.setRotation(0f);
 			hop.play();
 			facingLeft = false;
 			facingDown = false;
@@ -127,12 +133,12 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 			if (frog.moveDown(facingLeft, facingDown)) {
 				points -= 10;
 			}
-			frogSprite.rotate(180f);
+			frogSprite.setRotation(180f);
 			hop.play();
 			facingLeft = false;
 			facingDown = true;
 		}
-		System.out.println("Y:" + frog.getY());
+		//System.out.println("Y:" + frog.getY());
 		
 		int endResult = frog.isAtHome(positions);
 		if (endResult < 5) {
@@ -156,10 +162,24 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		checkWin();
 		for (Car c: cars) {
 			c.draw();
+			if (c.collide(frogSprite)) {
+				frog.newFrog();
+				//lives--;
+				//System.out.println("DEATH TO FROGS");
+			}
 		}
+		/*for (Log l: logs) {
+			l.draw();
+			if (l.collide(frogSprite)) {
+				frog.newFrog();
+				//lives--;
+				//System.out.println(frogSprite.getX());
+			}
+		}*/
 		ticks++;
-		System.out.println(points);
+		//System.out.println(points);
 		frogSprite.setPosition(frog.getX(), frog.getY());
+		
 		
 		//frog.drowned();
 	}
@@ -260,8 +280,17 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	public ArrayList<Car> createCarLane (int laneNum, int carNum) {
 		ArrayList<Car> lane = new ArrayList<Car>();
 		for (int i = 0; i < carNum; i++) {
-			Car car = new Car(laneNum, laneNum * 43 + 68, batch);
+			Car car = new Car(laneNum, laneNum * 47 + 52, batch, i);
 			lane.add(car);
+		}
+		return lane;
+	}
+	
+	public ArrayList<Log> createLogLane (int laneNum) {
+		ArrayList<Log> lane = new ArrayList<Log>();
+		for (int i = 0; i < 3; i++) {
+			Log log = new Log(laneNum, laneNum * 47 + 362, batch, i);
+			lane.add(log);
 		}
 		return lane;
 	}
