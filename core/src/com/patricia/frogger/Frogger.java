@@ -27,14 +27,13 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	Texture loseImg;
 	Texture levelImg;
 	Texture scoreImg;
-	Texture frogImg;
 	Texture deathImg;
 	Texture lifeImg;
 	Texture titleImg;
 	Texture playImg;
 	Texture playAgainImg;
 	
-	Sprite frogSprite;
+	
 	
 	Frog frog;
 	Fly fly;
@@ -67,7 +66,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	public void create () {
 		batch = new SpriteBatch();
 		
-		frog = new Frog();
+		frog = new Frog(batch);
 		
 		fly = new Fly();
 		flyImg = new Texture(Gdx.files.internal("sprites/fly.png"));
@@ -86,8 +85,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		background = new TextureRegion(backgroundImg, 0, 0, 690, 785);
 		
 		
-		frogImg = new Texture(Gdx.files.internal("sprites/frog.png"));
-		frogSprite = new Sprite(frogImg, 20, 20, 50, 50);
+
 		
 		hop = Gdx.audio.newSound(Gdx.files.internal("sounds/sound-frogger-hop.wav"));
 		plunk = Gdx.audio.newSound(Gdx.files.internal("sounds/sound-frogger-plunk.wav"));
@@ -117,8 +115,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	
 	public void moveFrog() {
 		if (Gdx.input.isKeyJustPressed(Keys.LEFT)){
-			frog.moveLeft(facingLeft, facingDown);
-			frogSprite.setRotation(90f);
+			frog.moveLeft(facingLeft, facingDown);			
 			hop.play();
 			facingLeft = true;
 			facingDown = false;
@@ -126,7 +123,6 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		
 		else if (Gdx.input.isKeyJustPressed(Keys.RIGHT)){
 			frog.moveRight(facingLeft, facingDown);
-			frogSprite.setRotation(270f);
 			hop.play();
 			facingLeft = false;
 			facingDown = false;
@@ -136,7 +132,6 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 			if (frog.moveUp(facingLeft, facingDown)) {
 				points += 10;
 			}
-			frogSprite.setRotation(0f);
 			hop.play();
 			facingLeft = false;
 			facingDown = false;
@@ -146,7 +141,6 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 			if (frog.moveDown(facingLeft, facingDown)) {
 				points -= 10;
 			}
-			frogSprite.setRotation(180f);
 			hop.play();
 			facingLeft = false;
 			facingDown = true;
@@ -181,12 +175,12 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 			fly.remove();
 		}
 		
-		frogSprite.setPosition(frog.getX(), frog.getY());
+		frog.move();
 		
 		checkWin();
 		for (Car c: cars) {
 			c.draw();
-			if (c.collide(frogSprite)) {
+			if (c.collide(frog)) {
 				squash.play();
 				resetRound(true);
 			}
@@ -195,7 +189,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		boolean collided = false;
 		for (Log l: logs) {
 			l.draw();
-			if (l.collide(frogSprite)) {
+			if (l.collide(frog)) {
 				frog.setOnLog(l.getSpeed());
 				collided = true;
 			}			
@@ -206,7 +200,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 			resetRound(true);
 		}
 		
-		if (frog.getX() < - 30 || frog.getX() > 656) {
+		if (frog.getX() < 0 - (frog.getWidth()/2) || frog.getX() > 690 + (frog.getWidth()/2)) {
 			plunk.play();
 			resetRound(true);
 		}
@@ -237,8 +231,9 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 				
 				update();
 				
+				frog.draw();
+				
 				batch.begin();
-				frogSprite.draw(batch);
 		        batch.draw(flyImg, fly.getPosition(), 630);
 		        for (int i = 0; i < wins.length; i++) {
 		        	if (wins[i]) {

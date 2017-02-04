@@ -62,9 +62,10 @@ public class Log {
 		return speed;
 	}
 	
-	public boolean collide (Sprite frog){
-		Rectangle rect = new Rectangle(frog.getX() + 18, frog.getY() - 22, 15, 28);
-		Rectangle logRect = new Rectangle(logSprite.getX(), logSprite.getY() - logSprite.getHeight(), logSprite.getWidth(), logSprite.getHeight() );
+	public boolean collide (Frog frog){
+		Sprite frogSprite = frog.getSprite();
+		Rectangle rect = new Rectangle(frogSprite.getX(), frogSprite.getY(), frogSprite.getWidth()/2, frogSprite.getHeight());
+		Rectangle logRect = new Rectangle(logSprite.getX(), logSprite.getY(), logSprite.getWidth(), logSprite.getHeight() );
 		return rect.overlaps(logRect);
 	}
 }

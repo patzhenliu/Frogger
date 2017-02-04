@@ -60,9 +60,10 @@ public class Car {
 		move();
 	}
 	
-	public boolean collide (Sprite frog){
-		Rectangle rect = new Rectangle(frog.getX() + 18, frog.getY() - 22, 26, 28);
-		Rectangle carRect = new Rectangle(carSprite.getX(), carSprite.getY() - carSprite.getHeight(), carSprite.getWidth(), carSprite.getHeight() );
+	public boolean collide (Frog frog){
+		Sprite frogSprite = frog.getSprite();
+		Rectangle rect = new Rectangle(frogSprite.getX(), frogSprite.getY(), frogSprite.getWidth(), frogSprite.getHeight());
+		Rectangle carRect = new Rectangle(carSprite.getX(), carSprite.getY(), carSprite.getWidth(), carSprite.getHeight() );
 		return rect.overlaps(carRect);
 	}
 	
