@@ -29,11 +29,11 @@ public class Frog {
 		if (y >= 600) {
 			for (int i = 0; i < homePositions.length; i++) {
 				if (((x) > (homePositions[i] - 20)) && ((x) < (homePositions[i] + 20))) {
-					newFrog();
+					//newFrog();
 					return i;
 				}
 			}
-			newFrog();
+			//newFrog();
 			return 5;
 		}
 		return 6;

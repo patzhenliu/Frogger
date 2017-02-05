@@ -31,6 +31,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	
 	Frog frog;
 	Fly fly;
+	Crocodile crocodile;
 	ArrayList<Car> cars;
 	ArrayList<Log> logs;
 	
@@ -42,7 +43,9 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	Random rand = new Random();
 	
 	int time;
-	int ticks;
+	int crocTime;
+	int flyTicks;
+	int crocTicks;
 	int levelNum;
 	int points;
 	int highScore;
@@ -60,6 +63,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		
 		frog = new Frog(batch);
 		fly = new Fly(batch);
+		crocodile = new Crocodile(batch, levelNum);
 		
 		homeFrog = new Texture(Gdx.files.internal("sprites/homeFrog.png"));
 		lifeImg = new Texture(Gdx.files.internal("sprites/life.png"));
@@ -82,10 +86,11 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		menuMusic = Gdx.audio.newMusic(Gdx.files.internal("sounds/frogger-music.mp3"));
 		menuMusic.play();
         
-		
+		crocTime = rand.nextInt(500) + 600;
 		onStartMenu = true;
 		highScore = 0;
 		resetGame();
+		levelNum = 1;
 		
 		redNums = new Texture[10];
 		whiteNums = new Texture[10];
@@ -140,6 +145,10 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 			if (wins[endResult]) {
 				lives--;
 			}
+			else if ((crocodile.getPosition()-30) / 144 == endResult) {
+				squash.play();
+				resetRound(true);
+			}
 			else{
 				points += 50;
 				points += time/30 * 10;
@@ -147,9 +156,11 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 					points += 200;
 				}
 				fly.removePosition(endResult);
+				crocodile.setPositionArray(fly.getPositionArray());
 				wins[endResult] = true;
 				
 				resetRound(false);
+				frog.newFrog();
 			}
 		}
 		else if (endResult == 5){
@@ -158,10 +169,13 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 			//lives--;
 		}
 		
-		if (ticks > 200) {
+		if (flyTicks > 200) {
 			fly.remove();
 		}
-		
+		if (crocTicks > 500) {
+			crocodile.remove();
+		}
+
 		frog.move();
 		
 		checkWin();
@@ -193,7 +207,15 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		}
 		
 		frog.draw();
-		fly.draw();
+		
+		if (fly.getPosition() != crocodile.getPosition()) {
+			fly.draw();
+			crocodile.draw();
+		}
+		else {
+			crocodile.randomizePosition(levelNum);
+		}
+		
 		
 		batch.begin();
         for (int i = 0; i < wins.length; i++) {
@@ -211,7 +233,8 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		if (points > highScore) {
 			highScore = points;
 		}
-		ticks++;
+		flyTicks++;
+		crocTicks++;
 		time--;
 
 	}
@@ -245,8 +268,13 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		        batch.end();
 		        
 		        
-		        if (ticks == 400) {
-		        	resetTicks();
+		        if (flyTicks == 400) {
+		        	resetFlyTicks();
+		        }
+		        
+		        if (crocTicks == crocTime) {
+		        	crocTime = rand.nextInt(500) + 600;
+		        	resetCrocTicks();
 		        }
 		        
 		        if (time == 0) {
@@ -331,18 +359,26 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 			frog.die();			
 			lives--;
 		}
+		flyTicks = 0;
+		fly.randomizePosition();
+		crocTicks = 501;
 		time = 60 * 30;
 	}
 	
-	public void resetTicks () {
-		ticks = 0;
+	public void resetFlyTicks () {
+		flyTicks = 0;
     	fly.randomizePosition();
 
 	}
 	
+	public void resetCrocTicks () {
+		crocTicks = 0;
+    	crocodile.randomizePosition(levelNum);
+
+	}
+	
 	public void resetLevel() {
-		ticks = 0;
-		time = 60 * 30;
+		resetRound(false);
 		lives = 3;
 		levelNum++;
 		wins = new boolean[5];
