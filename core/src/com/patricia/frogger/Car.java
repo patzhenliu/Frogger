@@ -13,15 +13,13 @@ public class Car {
 	private Texture carImg;
 	private Sprite carSprite;
 	private int speed;
-	private int type;
-	private boolean headingRight; //true = right. false=left
+	private boolean headingRight;
 	private int x;
 	private int y;
 	private Random rand = new Random(System.currentTimeMillis() );
 	
-	public Car (int type, int y, Batch batch, int carNum, int speed) {
+	public Car(int type, int y, Batch batch, int carNum, int speed) {
 		this.speed = speed; // pixel per frame
-		this.type = type;
 		this.y = y;
 		this.batch = batch;
 		String fileName = "sprites/car" + type + ".png";
@@ -30,7 +28,7 @@ public class Car {
 		
 		int randomSpace = rand.nextInt(100) + 200;
 		
-		headingRight = (type == 1 || type == 5);		
+		headingRight =(type == 1 || type == 5);		
 		
 		if(headingRight){
 			x = -10 + randomSpace * carNum;
@@ -40,10 +38,10 @@ public class Car {
 		}
 	}
 	
-	private void move () {
+	private void move() {
 		x += speed;
-		if (x < -10 || x > 800) {
-			if (headingRight) {
+		if(x < -10 || x > 800) {
+			if(headingRight) {
 				x = -10;
 			}
 			else {
@@ -52,7 +50,7 @@ public class Car {
 		}
 	}
 	
-	public void draw () {
+	public void draw() {
 		batch.begin();
 		carSprite.setPosition(x, y);
 		carSprite.draw(batch);
@@ -60,7 +58,7 @@ public class Car {
 		move();
 	}
 	
-	public boolean collide (Frog frog){
+	public boolean collide(Frog frog){
 		Sprite frogSprite = frog.getSprite();
 		Rectangle rect = new Rectangle(frogSprite.getX(), frogSprite.getY(), frogSprite.getWidth(), frogSprite.getHeight());
 		Rectangle carRect = new Rectangle(carSprite.getX(), carSprite.getY(), carSprite.getWidth(), carSprite.getHeight() );

@@ -9,9 +9,9 @@ public class Frog {
 	private Batch batch;
 	private int x;
 	private int y;
-	private int dx;
-	private int dy;
-	private int dyingSpeed;
+	private int dx; //how much each sprite moves horizontally
+	private int dy; //how much each sprite moves vertically
+	private int dyingSpeed; //how long death lasts for
 	private boolean isDead;
 	private Sprite frogSprite;
 	private Texture frogImg;
@@ -24,7 +24,7 @@ public class Frog {
 	
 	private boolean isMoving;
 	
-	public Frog (Batch batch) {
+	public Frog(Batch batch) {
 		this.batch = batch;
 		
 		frogImg = new Texture(Gdx.files.internal("sprites/frogSprites.png"));
@@ -46,21 +46,19 @@ public class Frog {
 	}
 
 	
-	public int isAtHome (int[] homePositions) {
+	public int getHomePos(int[] homePositions) {
 		if (y >= 600) {
 			for (int i = 0; i < homePositions.length; i++) {
 				if (((x) > (homePositions[i] - 20)) && ((x) < (homePositions[i] + 20))) {
-					//newFrog();
 					return i;
 				}
 			}
-			//newFrog();
 			return 5;
 		}
 		return 6;
 	}
 	
-	public boolean isInWater () {
+	public boolean isInWater() {
 		if (y >= 390 && y <= 630) {
 			return true;
 		}
@@ -68,7 +66,7 @@ public class Frog {
 		return false;
 	}
 	
-	public void newFrog () {
+	public void newFrog() {
 		x = 332;
 		y = 65;
 		isDead = false;
@@ -79,7 +77,7 @@ public class Frog {
 		isMoving = false;
 	}
 	
-	public boolean moveLeft () {
+	public boolean moveLeft() {
 		if (!isMoving) {
 			rotateSprites(90f);
 			
@@ -95,7 +93,7 @@ public class Frog {
 		return false;
 	}
 	
-	public boolean moveRight () {
+	public boolean moveRight() {
 		if (!isMoving) {
 			rotateSprites(270f);
 			
@@ -111,7 +109,7 @@ public class Frog {
 		return false;
 	}
 	
-	public boolean moveUp () {
+	public boolean moveUp() {
 		if (!isMoving) {
 			rotateSprites(0f);
 			
@@ -127,7 +125,7 @@ public class Frog {
 		return false;
 	}
 	
-	public boolean moveDown () {
+	public boolean moveDown() {
 		if (!isMoving) {
 			rotateSprites(180f);
 			
@@ -143,19 +141,17 @@ public class Frog {
 		return false;
 	}
 	
-	public void rotateSprites (float angle) {
+	public void rotateSprites(float angle) {
+		//rotates all frog sprites
 		frogSprites[0].setRotation(angle);
 		frogSprites[1].setRotation(angle);
 		frogSprites[2].setRotation(angle);
 	}
 	
-	public void move () {
-		
+	public void move() {
+		//shuffles through frog sprites
 		if (spriteCount > 0) {
 			isMoving = true;
-			//batch.begin();
-			//frogSprites[spriteCount].draw(batch);
-			//batch.end();
 			animationCount--;
 			if (animationCount == 0) {
 				x += dx;
@@ -173,25 +169,26 @@ public class Frog {
 		
 	}
 	
-	public void draw () {
+	public void draw() {
+		//draw current frog sprite
 		batch.begin();
 		frogSprites[spriteCount].draw(batch);
 		batch.end();
 	}
 	
-	public Sprite getSprite () {
+	public Sprite getSprite() {
 		return frogSprite;
 	}
 	
-	public int getX () {
+	public int getX() {
 		return x;
 	}
 	
-	public int getY () {
+	public int getY() {
 		return y;
 	}
 	
-	public int getWidth () {
+	public int getWidth() {
 		return Math.round(frogSprite.getWidth());
 	}
 	
@@ -199,7 +196,7 @@ public class Frog {
 		x += speed;
 	}
 	
-	public boolean getIsDead () {
+	public boolean getIsDead() {
 		return isDead;
 	}
 	
@@ -207,8 +204,8 @@ public class Frog {
 		isDead = true;
 	}
 	
-	public boolean dying () {
-		
+	public boolean dying() {
+		//dying "animation"
 		if(isDead){
 			if (dyingSpeed > 0) {
 				dyingSpeed--;
@@ -223,7 +220,14 @@ public class Frog {
 			
 		}
 		return false;
-		
 	}
+	
+	public boolean leftScreen() {
+		if (x < 0 - frogSprite.getWidth() || x > 690 - frogSprite.getWidth()) {
+			return true;
+		}
+		return false;
+	}
+
 	
 }

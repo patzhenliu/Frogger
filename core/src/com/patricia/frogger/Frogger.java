@@ -58,7 +58,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	
 	
 	@Override
-	public void create () {
+	public void create() {
 		batch = new SpriteBatch();
 		
 		frog = new Frog(batch);
@@ -86,7 +86,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		menuMusic = Gdx.audio.newMusic(Gdx.files.internal("sounds/frogger-music.mp3"));
 		menuMusic.play();
         
-		crocTime = rand.nextInt(500) + 600;
+		crocTime = rand.nextInt(500) + 600; //amount of ticks before croc reappears
 		onStartMenu = true;
 		highScore = 0;
 		resetGame();
@@ -94,7 +94,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		
 		redNums = new Texture[10];
 		whiteNums = new Texture[10];
-		for (int i = 0; i < redNums.length; i++){
+		for(int i = 0; i < redNums.length; i++){
 		    String fileName = "text/" + i + ".png";
 		    redNums[i] = new Texture(Gdx.files.internal(fileName));
 		    fileName = "text/" + i + "w.png";
@@ -106,113 +106,73 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		
 	}
 	
-	public void moveFrog() {
-		if (Gdx.input.isKeyJustPressed(Keys.LEFT)){
-			if (frog.moveLeft()) {			
-				hop.play();
-			}
-		}
-		
-		else if (Gdx.input.isKeyJustPressed(Keys.RIGHT)){
-			 if (frog.moveRight()) {
-				 hop.play();
-			 }
-		}
-		
-		else if (Gdx.input.isKeyJustPressed(Keys.UP)){
-			if (frog.moveUp()) {
-				points += 10;
-				hop.play();
-			}
-			
-		}
-		
-		else if (Gdx.input.isKeyJustPressed(Keys.DOWN)){
-			if (frog.moveDown()) {
-				points -= 10;
-				hop.play();
-			}
-			
-		}
-	}
 
-	public void update () {
+	public void update() {
+		//frog movement and death
+		//crocodile and fly movement
+		//car and log movement
 		
-		if (frog.dying()) {
+		if(frog.dying()) {
 			 return;
 		}
 		
 		moveFrog();
 		
-		int endResult = frog.isAtHome(positions);
-		if (endResult < 5) {
-			if (wins[endResult]) {
+		int homeIndex = frog.getHomePos(positions);
+		if(homeIndex < 5) {
+			if(wins[homeIndex]) {
 				lives--;
 			}
-			else if ((crocodile.getPosition()-30) / 144 == endResult) {
-				squash.play();
-				resetRound(true);
+			else if((crocodile.getPosition()-30) / 144 == homeIndex) {
+				resetRound(true, false);
 			}
 			else{
 				points += 50;
 				points += time/30 * 10;
-				if ((fly.getPosition()-30) / 144 == endResult) {
-					points += 200;
-				}
-				fly.removePosition(endResult);
+				eatFly(homeIndex);
+				fly.removePosition(homeIndex);
 				crocodile.setPositionArray(fly.getPositionArray());
-				wins[endResult] = true;
+				wins[homeIndex] = true;
 				
-				resetRound(false);
-				frog.newFrog();
+				resetRound(false, true);
 			}
 		}
-		else if (endResult == 5){
-			plunk.play();
-			resetRound(true);
-			//lives--;
+		else if(homeIndex == 5){
+			resetRound(true, true);
 		}
 		
-		if (flyTicks > 200) {
-			fly.remove();
-		}
-		if (crocTicks > 500) {
-			crocodile.remove();
-		}
+		removeHomeObstacles();
 
 		frog.move();
 		
 		checkWin();
         
-        for (Car c: cars) {
+        for(Car c: cars) {
 			c.draw();
-			if (c.collide(frog)) {
-				squash.play();
-				resetRound(true);
+			if(c.collide(frog)) {
+				resetRound(true, false);
 			}
 		}
 		
 		boolean collided = false;
-		for (Log l: logs) {
+		for(Log l: logs) {
 			l.draw();
-			if (l.collide(frog)) {
+			if(l.collide(frog)) {
 				frog.setOnLog(l.getSpeed());
 				collided = true;
 			}			
 		}
-		if (!collided && frog.isInWater()){
-			plunk.play();
-			resetRound(true);
+		if(!collided && frog.isInWater()){
+			resetRound(true, true);
 		}
 		
-		if (frog.getX() < 0 - frog.getWidth()*3 || frog.getX() > 690 - frog.getWidth()) {
-			plunk.play();
-			resetRound(true);
+		if(frog.leftScreen()) {
+			resetRound(true, true);
 		}
 		
 		frog.draw();
 		
-		if (fly.getPosition() != crocodile.getPosition()) {
+		if(fly.getPosition() != crocodile.getPosition()) {
 			fly.draw();
 			crocodile.draw();
 		}
@@ -222,21 +182,22 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		
 		
 		batch.begin();
-        for (int i = 0; i < wins.length; i++) {
-        	if (wins[i]) {
+        for(int i = 0; i < wins.length; i++) {
+        	if(wins[i]) {
         		batch.draw(homeFrog, positions[i], 630);
         	}
         }
         
-        for (int i = 0; i < lives - 1; i ++) {
+        for(int i = 0; i < lives - 1; i ++) {
         	batch.draw(lifeImg, i * 45 + 18, 10);
         }
         batch.end();
 		
 		
-		if (points > highScore) {
+		if(points > highScore) {
 			highScore = points;
 		}
+		
 		flyTicks++;
 		crocTicks++;
 		time--;
@@ -244,16 +205,17 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	}
 	
 	@Override
-	public void render () {
+	public void render() {
+		//draws all text, start menu, losing screen
 		try{
 			Thread.sleep(33);
 		
-			if (onStartMenu) {
+			if(onStartMenu) {
 				startMenu();
 			}
 			
-			else if (lives > 0 || frog.getIsDead()){
-				if (checkWin()) {
+			else if(lives > 0 || frog.getIsDead()){
+				if(checkWin()) {
 					resetLevel();
 				}
 				
@@ -261,55 +223,68 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 				
 				update();
 
-				
-				batch.begin();
-		        drawNum(540, 13, time/30, false);
-		        drawNum(120, 720, points, true);
-		        drawNum(290, 720, highScore, true);
+				drawText();
 		        
-		        batch.draw(levelImg, 120, 20);
-		        drawNum(230, 23, levelNum, false);
-		        batch.end();
-		        
-		        
-		        if (flyTicks == 400) {
+		        if(flyTicks == 400) {
 		        	resetFlyTicks();
 		        }
 		        
-		        if (crocTicks == crocTime) {
+		        if(crocTicks == crocTime) {
 		        	crocTime = rand.nextInt(500) + 600;
 		        	resetCrocTicks();
 		        }
 		        
-		        if (time == 0) {
-		        	timesUp.play();
-		        	resetRound(true);
-		        }
+		        checkTime();
+		        
 			}
 			else {
 		        loseScreen();
 	        
 			}
 		}
-		catch (InterruptedException  ex) {
+		catch(InterruptedException  ex) {
 			Thread.currentThread().interrupt();
 		}
 	}
 	
-	public void startMenu () {
+	public void checkTime() {
+		if(time == 30) {
+        	timesUp.play();
+        }
+        
+        if(time == 0) {
+        	resetRound(true, false);
+        }
+	}
+	
+	public void drawText() {
+		batch.begin();
+		batch.draw(levelImg, 120, 20);
+		drawNum(230, 23, levelNum, false);
+        drawNum(540, 13, time/30, false);
+        drawNum(120, 720, points, true);
+        drawNum(290, 720, highScore, true);
+        batch.end();
+	}
+	
+	public void startMenu() {
+		//draws start menu
+		//checks if player hits ENTER - play
 		drawBackground();
 		batch.begin();
         batch.draw(titleImg, 100, 733);
         batch.draw(playImg, 105, 125);
         batch.end();
         
-		if (Gdx.input.isKeyPressed(Keys.ENTER)) {
+		if(Gdx.input.isKeyPressed(Keys.ENTER)) {
 			menuMusic.dispose();
 			onStartMenu = false;
 		}
 	}
 	
-	public void loseScreen () {
+	public void loseScreen() {
+		//draws screen when player loses
+		//checks if player hits ENTER - play again
 		drawBackground();
 		batch.begin();
 		batch.draw(titleImg, 100, 733);
@@ -319,9 +294,19 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
         batch.draw(playAgainImg, 105, 125);
         batch.end();
         
-        if (Gdx.input.isKeyJustPressed(Keys.ENTER)){
+        if(Gdx.input.isKeyJustPressed(Keys.ENTER)){
         	resetGame();
         }
+	}
+	
+	public void removeHomeObstacles() {
+		//checks if fly and crocodile should be removed
+		if(flyTicks > 200) {
+			fly.remove();
+		}
+		if(crocTicks > 500) {
+			crocodile.remove();
+		}
 	}
 	
 	public void drawBackground() {
@@ -331,13 +316,14 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		batch.end();
 	}
 	
-	public void drawScore (int xDisplace, int y) {
+	public void drawScore(int xDisplace, int y) {
 		drawNum(xDisplace, y, points, true);
 	}
 	
-	public void drawNum (int xDisplace, int y, int num, boolean red) {
-		for (int i = 0; i < Integer.toString(num).length(); i++) {
-			if (red) {
+	public void drawNum(int xDisplace, int y, int num, boolean red) {
+		//draws numbers
+		for(int i = 0; i < Integer.toString(num).length(); i++) {
+			if(red) {
 				batch.draw(redNums[Integer.parseInt(Integer.toString(num).substring(i, i + 1))], i * 20 + xDisplace, y);
 			}
 			else {
@@ -347,9 +333,10 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	}
 	
 	
-	public boolean checkWin () {
-		for (boolean w: wins) {
-			if (!w) {
+	public boolean checkWin() {
+		//check if all homes are filled
+		for(boolean w: wins) {
+			if(!w) {
 				return false;
 			}
 		}
@@ -357,11 +344,74 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		return true;
 	}
 	
-	public void resetRound(boolean isDead) {
+	public void moveFrog() {
+		if(Gdx.input.isKeyJustPressed(Keys.LEFT)){
+			if(frog.moveLeft()) {			
+				hop.play();
+			}
+		}
 		
-		if (isDead) {
+		else if(Gdx.input.isKeyJustPressed(Keys.RIGHT)){
+			 if(frog.moveRight()) {
+				 hop.play();
+			 }
+		}
+		
+		else if(Gdx.input.isKeyJustPressed(Keys.UP)){
+			if(frog.moveUp()) {
+				points += 10;
+				hop.play();
+			}
+			
+		}
+		
+		else if(Gdx.input.isKeyJustPressed(Keys.DOWN)){
+			if(frog.moveDown()) {
+				points -= 10;
+				hop.play();
+			}
+			
+		}
+	}
+	
+	public void eatFly(int index) {
+		if((fly.getPosition()-30) / 144 == index) {
+			points += 200;
+		}
+	}
+	
+	public void resetFlyTicks() {
+		flyTicks = 0;
+    	fly.randomizePosition();
+
+	}
+	
+	public void resetCrocTicks() {
+		crocTicks = 0;
+    	crocodile.randomizePosition(levelNum);
+
+	}
+	
+	public void playDeathSound(boolean inWater) {
+		if (inWater) {
+			plunk.play();
+		}
+		else {
+			squash.play();
+		}
+	}
+	
+	public void resetRound(boolean isDead, boolean inWater) {
+		//resets variables for the round
+		//takes care of frog death
+		
+		if(isDead) {
+			playDeathSound(inWater);
 			frog.die();			
 			lives--;
+		}
+		else {
+			frog.newFrog();
 		}
 		flyTicks = 0;
 		fly.randomizePosition();
@@ -369,20 +419,9 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		time = 60 * 30;
 	}
 	
-	public void resetFlyTicks () {
-		flyTicks = 0;
-    	fly.randomizePosition();
-
-	}
-	
-	public void resetCrocTicks () {
-		crocTicks = 0;
-    	crocodile.randomizePosition(levelNum);
-
-	}
 	
 	public void resetLevel() {
-		resetRound(false);
+		resetRound(false, true);
 		lives = 3;
 		levelNum++;
 		wins = new boolean[5];
@@ -398,37 +437,37 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		
 	}
 	
-	public void createObstacles () {
+	public void createObstacles() {
 		cars = createCarLane(1);
-		cars.addAll(createCarLane(2));
-		cars.addAll(createCarLane(3));
-		cars.addAll(createCarLane(4));
-		cars.addAll(createCarLane(5));
+		for(int i = 2; i < 6; i++) {
+			cars.addAll(createCarLane(i));
+		}
+		
 		logs = createLogLane(1);
-		logs.addAll(createLogLane(2));
-		logs.addAll(createLogLane(3));
-		logs.addAll(createLogLane(4));
-		logs.addAll(createLogLane(5));
+		for(int i = 2; i < 6; i++) {
+			logs.addAll(createLogLane(i));
+		}
 	}
 	
-	
-	public ArrayList<Car> createCarLane (int laneNum) {
+	public ArrayList<Car> createCarLane(int laneNum) {
+		//create car objects
 		ArrayList<Car> lane = new ArrayList<Car>();
 		int carNum = rand.nextInt(1) + 2;
 		int carSpeed = rand.nextInt(3) + 2;
-		for (int i = 0; i < carNum; i++) {
+		for(int i = 0; i < carNum; i++) {
 			Car car = new Car(laneNum, laneNum * 47 + 63, batch, i, carSpeed);
 			lane.add(car);
 		}
 		return lane;
 	}
 	
-	public ArrayList<Log> createLogLane (int laneNum) {
+	public ArrayList<Log> createLogLane(int laneNum) {
+		//create log objects
 		ArrayList<Log> lane = new ArrayList<Log>();
 		int logNum = rand.nextInt(1) + 2;
 		int logSpeed = rand.nextInt(3) + 2;
 		int logLength = rand.nextInt(3) + 4;
-		for (int i = 0; i < logNum; i++) {
+		for(int i = 0; i < logNum; i++) {
 			Log log = new Log(laneNum, laneNum * 47 + 362, batch, i, logSpeed, logLength);
 			lane.add(log);
 		}

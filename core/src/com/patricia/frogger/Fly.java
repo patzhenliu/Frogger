@@ -14,48 +14,48 @@ public class Fly {
 	private Random rand = new Random();
 	private int[] positions = {30, 174, 318, 462, 606};
 	
-	public Fly (Batch batch) {
+	public Fly(Batch batch) {
 		this.batch = batch;
 		y = 630;
 		randomizePosition();
 		flyImg = new Texture(Gdx.files.internal("sprites/fly.png"));
 	}
 	
-	public void randomizePosition () {
+	public void randomizePosition() {
 		int chance = rand.nextInt(positions.length);
 		x = positions[chance];
 	}
 	
-	public int getPosition () {
+	public int getPosition() {
 		return x;
 	}
 	
-	public void remove () {
+	public void remove() {
 		x = 1000;
 	}
 	
-	public int[] getPositionArray () {
+	public int[] getPositionArray() {
 		return positions;
 	}
 	
 	public void removePosition(int index) {
 		int newIndex;
 		int oldPos = positions[index];
-		if (index != positions.length - 1) {
+		if(index != positions.length - 1) {
 			newIndex = index + 1;
 		}
 		else{
 			newIndex = 0;
 		}
-		for (int i = 0; i < positions.length; i++) {
-			if (positions[i] == oldPos) {
+		for(int i = 0; i < positions.length; i++) {
+			if(positions[i] == oldPos) {
 				positions[i] = positions[newIndex];
 			}
 		}
 
 	}
 	
-	public void draw () {
+	public void draw() {
 		batch.begin();
 		batch.draw(flyImg, x, 630);
 		batch.end();
