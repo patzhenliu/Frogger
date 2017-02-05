@@ -1,3 +1,7 @@
+//Log.java
+//Patricia Liu
+////Contains all information and methods regarding the logs
+
 package com.patricia.frogger;
 
 import java.util.Random;
@@ -26,9 +30,9 @@ public class Log {
 		logSprite = new Sprite(logImg);
 		logSprite.setSize(length * 21, logSprite.getHeight());
 		
-		int randomSpace = rand.nextInt(100) + 200;
+		int randomSpace = rand.nextInt(100) + 200; //determines the amount of space between each log
 		
-		headingRight =(laneNum == 2 || laneNum == 4);		
+		headingRight =(laneNum == 2 || laneNum == 4); //logs in the specified lanes go right
 		
 		if(headingRight){
 			x = -10 + randomSpace * logNum;
@@ -58,14 +62,14 @@ public class Log {
 		move();
 	}
 	
-	public int getSpeed() {
-		return speed;
-	}
-	
 	public boolean collide(Frog frog){
 		Sprite frogSprite = frog.getSprite();
 		Rectangle rect = new Rectangle(frogSprite.getX(), frogSprite.getY(), frogSprite.getWidth()/2, frogSprite.getHeight());
 		Rectangle logRect = new Rectangle(logSprite.getX(), logSprite.getY(), logSprite.getWidth(), logSprite.getHeight() );
 		return rect.overlaps(logRect);
+	}
+	
+	public int getSpeed() {
+		return speed;
 	}
 }

@@ -1,3 +1,6 @@
+//DesktopLauncher.java
+//Patricia Liu
+
 package com.patricia.frogger.desktop;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;

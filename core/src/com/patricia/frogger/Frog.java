@@ -1,3 +1,7 @@
+//Frog.java
+//Patricia Liu
+//Contains all information and methods regarding the frog
+
 package com.patricia.frogger;
 
 import com.badlogic.gdx.Gdx;
@@ -19,7 +23,7 @@ public class Frog {
 	private Sprite[] frogSprites;
 	
 	private int spriteCount;
-	private int animationSpeed;
+	private int speed;
 	private int animationCount;
 	
 	private boolean isMoving;
@@ -36,37 +40,16 @@ public class Frog {
 		frogSprites[2] = new Sprite(frogImg, 62, 0, 25, 35);
 		
 		spriteCount = 0;
-		animationSpeed = 3;
-		animationCount = animationSpeed;
+		speed = 3; 
+		animationCount = speed;
 		
 		deathImg = new Texture(Gdx.files.internal("sprites/death.png"));
 		
 		newFrog();
-		
-	}
-
-	
-	public int getHomePos(int[] homePositions) {
-		if (y >= 600) {
-			for (int i = 0; i < homePositions.length; i++) {
-				if (((x) > (homePositions[i] - 20)) && ((x) < (homePositions[i] + 20))) {
-					return i;
-				}
-			}
-			return 5;
-		}
-		return 6;
-	}
-	
-	public boolean isInWater() {
-		if (y >= 390 && y <= 630) {
-			return true;
-		}
-		
-		return false;
 	}
 	
 	public void newFrog() {
+		//resets variables for the frog object
 		x = 332;
 		y = 65;
 		isDead = false;
@@ -126,6 +109,7 @@ public class Frog {
 	}
 	
 	public boolean moveDown() {
+
 		if (!isMoving) {
 			rotateSprites(180f);
 			
@@ -141,13 +125,6 @@ public class Frog {
 		return false;
 	}
 	
-	public void rotateSprites(float angle) {
-		//rotates all frog sprites
-		frogSprites[0].setRotation(angle);
-		frogSprites[1].setRotation(angle);
-		frogSprites[2].setRotation(angle);
-	}
-	
 	public void move() {
 		//shuffles through frog sprites
 		if (spriteCount > 0) {
@@ -157,7 +134,7 @@ public class Frog {
 				x += dx;
 				y += dy;
 				spriteCount--;
-				animationCount = animationSpeed;
+				animationCount = speed;
 			}
 		}
 		else {
@@ -169,6 +146,13 @@ public class Frog {
 		
 	}
 	
+	public void rotateSprites(float angle) {
+		//rotates all frog sprites
+		frogSprites[0].setRotation(angle);
+		frogSprites[1].setRotation(angle);
+		frogSprites[2].setRotation(angle);
+	}
+	
 	public void draw() {
 		//draw current frog sprite
 		batch.begin();
@@ -176,28 +160,17 @@ public class Frog {
 		batch.end();
 	}
 	
-	public Sprite getSprite() {
-		return frogSprite;
-	}
-	
-	public int getX() {
-		return x;
-	}
-	
-	public int getY() {
-		return y;
-	}
-	
-	public int getWidth() {
-		return Math.round(frogSprite.getWidth());
-	}
-	
 	public void setOnLog (int speed) {
 		x += speed;
 	}
 	
-	public boolean getIsDead() {
-		return isDead;
+	public boolean isInWater() {
+		//checks if frog is touching the water
+		if (y >= 390 && y <= 630) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public void die(){
@@ -228,6 +201,41 @@ public class Frog {
 		}
 		return false;
 	}
+	
+	public int getHomePos(int[] homePositions) {
+		//returns frog's position based on a # 0-6
+		if (y >= 600) {
+			for (int i = 0; i < homePositions.length; i++) {
+				if (((x) > (homePositions[i] - 20)) && ((x) < (homePositions[i] + 20))) {
+					return i; //home position determined by index 0-4
+				}
+			}
+			return 5; // death
+		}
+		return 6; //frog hasn't reached the end 
+	}
+	
+	public int getX() {
+		return x;
+	}
+	
+	public int getY() {
+		return y;
+	}
+	
+	public int getWidth() {
+		return Math.round(frogSprite.getWidth());
+	}
+	
+	public Sprite getSprite() {
+		return frogSprite;
+	}
+	
+	public boolean getIsDead() {
+		return isDead;
+	}
+	
+	
 
 	
 }

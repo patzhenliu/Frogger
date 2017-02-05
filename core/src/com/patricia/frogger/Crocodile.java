@@ -1,5 +1,9 @@
 package com.patricia.frogger;
 
+//Crocodile.java
+//Patricia Liu
+////Contains all information and methods regarding the crocodile
+
 import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
@@ -24,22 +28,11 @@ public class Crocodile {
 	}
 	
 	public void randomizePosition(int levelNum) {
+		//change croc's x-coordinate
 		if(levelNum >= levelAppear) {
 			int chance = rand.nextInt(positions.length);
 			x = positions[chance];
 		}
-	}
-	
-	public int getPosition() {
-		return x;
-	}
-	
-	public void remove() {
-		x = 1000;
-	}
-	
-	public void setPositionArray(int[] posArray) {
-		positions = posArray;
 	}
 	
 	public void draw() {
@@ -47,4 +40,19 @@ public class Crocodile {
 		batch.draw(crocImg, x, 630);
 		batch.end();
 	}
+	
+	public void remove() {
+		//changed x-coordinate off the screen
+		x = 1000;
+	}
+	
+	public void setPositionArray(int[] posArray) {
+		positions = posArray;
+	}
+	
+	public int getPosition() {
+		return x;
+	}
+	
+	
 }

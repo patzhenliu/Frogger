@@ -1,3 +1,7 @@
+//Fly.java
+//Patricia Liu
+//Contains all information and methods regarding the fly
+
 package com.patricia.frogger;
 
 import java.util.Random;
@@ -22,23 +26,13 @@ public class Fly {
 	}
 	
 	public void randomizePosition() {
+		//change fly's x-coordinate
 		int chance = rand.nextInt(positions.length);
 		x = positions[chance];
 	}
 	
-	public int getPosition() {
-		return x;
-	}
-	
-	public void remove() {
-		x = 1000;
-	}
-	
-	public int[] getPositionArray() {
-		return positions;
-	}
-	
 	public void removePosition(int index) {
+		//removes the position that an existing frog is occupying
 		int newIndex;
 		int oldPos = positions[index];
 		if(index != positions.length - 1) {
@@ -59,6 +53,19 @@ public class Fly {
 		batch.begin();
 		batch.draw(flyImg, x, 630);
 		batch.end();
+	}
+	
+	public void remove() {
+		//changed x-coordinate off the screen
+		x = 1000;
+	}
+	
+	public int getPosition() {
+		return x;
+	}
+	
+	public int[] getPositionArray() {
+		return positions;
 	}
 	
 }

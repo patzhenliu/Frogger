@@ -1,3 +1,7 @@
+//Frogger.java
+//Patricia Liu
+//Contain all the game rules, logic, and interaction with user
+
 package com.patricia.frogger;
 
 import java.util.ArrayList;
@@ -104,8 +108,7 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		Gdx.input.setInputProcessor(this);
 		
 		
-	}
-	
+	}	
 
 	public void update() {
 		//frog movement and death
@@ -113,55 +116,29 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		//car and log movement
 		
 		if(frog.dying()) {
+			//nothing else happens while frog is dead
 			 return;
 		}
 		
 		moveFrog();
-		
-		int homeIndex = frog.getHomePos(positions);
-		if(homeIndex < 5) {
-			if(wins[homeIndex]) {
-				lives--;
-			}
-			else if((crocodile.getPosition()-30) / 144 == homeIndex) {
-				resetRound(true, false);
-			}
-			else{
-				points += 50;
-				points += time/30 * 10;
-				eatFly(homeIndex);
-				fly.removePosition(homeIndex);
-				crocodile.setPositionArray(fly.getPositionArray());
-				wins[homeIndex] = true;
-				
-				resetRound(false, true);
-			}
-		}
-		else if(homeIndex == 5){
-			resetRound(true, true);
-		}
-		
+		checkFrogAtHome();
 		removeHomeObstacles();
 
-		frog.move();
-		
 		checkWin();
+		resetTicks();
+        checkTime();
         
         for(Car c: cars) {
 			c.draw();
-			if(c.collide(frog)) {
-				resetRound(true, false);
-			}
+			carCollision(c);
 		}
 		
 		boolean collided = false;
 		for(Log l: logs) {
 			l.draw();
-			if(l.collide(frog)) {
-				frog.setOnLog(l.getSpeed());
-				collided = true;
-			}			
+			collided = logCollision(l);		
 		}
+		
 		if(!collided && frog.isInWater()){
 			resetRound(true, true);
 		}
@@ -170,34 +147,9 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 			resetRound(true, true);
 		}
 		
-		frog.draw();
-		
-		if(fly.getPosition() != crocodile.getPosition()) {
-			fly.draw();
-			crocodile.draw();
-		}
-		else {
-			crocodile.randomizePosition(levelNum);
-		}
-		
-		
-		batch.begin();
-        for(int i = 0; i < wins.length; i++) {
-        	if(wins[i]) {
-        		batch.draw(homeFrog, positions[i], 630);
-        	}
-        }
-        
-        for(int i = 0; i < lives - 1; i ++) {
-        	batch.draw(lifeImg, i * 45 + 18, 10);
-        }
-        batch.end();
-		
-		
-		if(points > highScore) {
-			highScore = points;
-		}
-		
+		drawEntities();
+		checkScore();
+			
 		flyTicks++;
 		crocTicks++;
 		time--;
@@ -220,21 +172,9 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 				}
 				
 				drawBackground();
-				
 				update();
-
 				drawText();
-		        
-		        if(flyTicks == 400) {
-		        	resetFlyTicks();
-		        }
-		        
-		        if(crocTicks == crocTime) {
-		        	crocTime = rand.nextInt(500) + 600;
-		        	resetCrocTicks();
-		        }
-		        
-		        checkTime();
+				
 		        
 			}
 			else {
@@ -247,17 +187,81 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		}
 	}
 	
-	public void checkTime() {
-		if(time == 30) {
-        	timesUp.play();
+	public void moveFrog() {
+		if(Gdx.input.isKeyJustPressed(Keys.LEFT)){
+			if(frog.moveLeft()) {			
+				hop.play();
+			}
+		}
+		
+		else if(Gdx.input.isKeyJustPressed(Keys.RIGHT)){
+			 if(frog.moveRight()) {
+				 hop.play();
+			 }
+		}
+		
+		else if(Gdx.input.isKeyJustPressed(Keys.UP)){
+			if(frog.moveUp()) {
+				points += 10;
+				hop.play();
+			}
+			
+		}
+		
+		else if(Gdx.input.isKeyJustPressed(Keys.DOWN)){
+			if(frog.moveDown()) {
+				points -= 10;
+				hop.play();
+			}
+			
+		}
+		
+		frog.move();
+	}
+	
+	public void drawEntities() {
+		//draw animals in the game
+		frog.draw();
+		
+		if(fly.getPosition() != crocodile.getPosition()) { //fly and croc can't show up in the same spot
+			fly.draw();
+			crocodile.draw();
+		}
+		else {
+			crocodile.randomizePosition(levelNum);
+		}
+		
+		drawHomeFrogs();
+		drawFrogLives();
+	}
+	
+	public void drawHomeFrogs() {
+		batch.begin();
+        for(int i = 0; i < wins.length; i++) {
+        	if(wins[i]) {
+        		batch.draw(homeFrog, positions[i], 630);
+        	}
         }
-        
-        if(time == 0) {
-        	resetRound(true, false);
+        batch.end();
+	}
+	
+	public void drawFrogLives() {
+		batch.begin();
+		for(int i = 0; i < lives - 1; i ++) {
+        	batch.draw(lifeImg, i * 45 + 18, 10);
         }
+        batch.end();
+	}
+	
+	public void drawBackground() {
+		batch.begin();
+		batch.draw(background, 0, 0);
+	    batch.draw(background, 0, Gdx.graphics.getHeight());
+		batch.end();
 	}
 	
 	public void drawText() {
+		//draws all text (numbers) present on screen
 		batch.begin();
 		batch.draw(levelImg, 120, 20);
 		drawNum(230, 23, levelNum, false);
@@ -265,6 +269,22 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
         drawNum(120, 720, points, true);
         drawNum(290, 720, highScore, true);
         batch.end();
+	}
+	
+	public void drawScore(int xDisplace, int y) {
+		drawNum(xDisplace, y, points, true);
+	}
+	
+	public void drawNum(int xDisplace, int y, int num, boolean red) {
+		//draws numbers
+		for(int i = 0; i < Integer.toString(num).length(); i++) {
+			if(red) {
+				batch.draw(redNums[Integer.parseInt(Integer.toString(num).substring(i, i + 1))], i * 20 + xDisplace, y);
+			}
+			else {
+				batch.draw(whiteNums[Integer.parseInt(Integer.toString(num).substring(i, i + 1))], i * 20 + xDisplace, y);
+			}
+        }
 	}
 	
 	public void startMenu() {
@@ -299,39 +319,33 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
         }
 	}
 	
-	public void removeHomeObstacles() {
-		//checks if fly and crocodile should be removed
-		if(flyTicks > 200) {
-			fly.remove();
-		}
-		if(crocTicks > 500) {
-			crocodile.remove();
-		}
-	}
-	
-	public void drawBackground() {
-		batch.begin();
-		batch.draw(background, 0, 0);
-	    batch.draw(background, 0, Gdx.graphics.getHeight());
-		batch.end();
-	}
-	
-	public void drawScore(int xDisplace, int y) {
-		drawNum(xDisplace, y, points, true);
-	}
-	
-	public void drawNum(int xDisplace, int y, int num, boolean red) {
-		//draws numbers
-		for(int i = 0; i < Integer.toString(num).length(); i++) {
-			if(red) {
-				batch.draw(redNums[Integer.parseInt(Integer.toString(num).substring(i, i + 1))], i * 20 + xDisplace, y);
+	public void checkFrogAtHome() {
+		//checks if frog has reached the end
+		//checks if frog is in the same position as fly or croc
+		int homeIndex = frog.getHomePos(positions);
+		if(homeIndex < 5) {
+			if(wins[homeIndex]) {
+				lives--;
 			}
-			else {
-				batch.draw(whiteNums[Integer.parseInt(Integer.toString(num).substring(i, i + 1))], i * 20 + xDisplace, y);
+			else if((crocodile.getPosition()-30) / 144 == homeIndex) {
+				resetRound(true, false);
 			}
-        }
+			else{
+				points += 50;
+				points += time/30 * 10;
+				eatFly(homeIndex);
+				fly.removePosition(homeIndex);
+				crocodile.setPositionArray(fly.getPositionArray());
+				wins[homeIndex] = true;
+				
+				resetRound(false, true);
+			}
+		}
+		else if(homeIndex == 5){
+			//missed the home position
+			resetRound(true, true);
+		}
 	}
-	
 	
 	public boolean checkWin() {
 		//check if all homes are filled
@@ -344,40 +358,54 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		return true;
 	}
 	
-	public void moveFrog() {
-		if(Gdx.input.isKeyJustPressed(Keys.LEFT)){
-			if(frog.moveLeft()) {			
-				hop.play();
-			}
+	public void checkScore() {
+		if(points > highScore) {
+			highScore = points;
 		}
-		
-		else if(Gdx.input.isKeyJustPressed(Keys.RIGHT)){
-			 if(frog.moveRight()) {
-				 hop.play();
-			 }
+	}
+	
+	public void checkTime() {
+		//checks if close to/is times up
+		if(time == 30) {
+        	timesUp.play();
+        }
+        if(time == 0) {
+        	resetRound(true, false);
+        }
+	}
+	
+	public void carCollision(Car c) {
+		//frog dies when colliding with car
+		if(c.collide(frog)) {
+			resetRound(true, false);
 		}
-		
-		else if(Gdx.input.isKeyJustPressed(Keys.UP)){
-			if(frog.moveUp()) {
-				points += 10;
-				hop.play();
-			}
-			
-		}
-		
-		else if(Gdx.input.isKeyJustPressed(Keys.DOWN)){
-			if(frog.moveDown()) {
-				points -= 10;
-				hop.play();
-			}
-			
-		}
+	}
+	
+	public boolean logCollision(Log l) {
+		//frog follows log on collision
+		if(l.collide(frog)) {
+			frog.setOnLog(l.getSpeed());
+			return true;
+		}	
+		return false;
 	}
 	
 	public void eatFly(int index) {
 		if((fly.getPosition()-30) / 144 == index) {
 			points += 200;
 		}
+	}
+	
+	public void resetTicks() {
+		//resets fly and croc ticks when each reaches a specified value
+		if(flyTicks == 400) {
+        	resetFlyTicks();
+        }
+        
+        if(crocTicks == crocTime) {
+        	crocTime = rand.nextInt(500) + 600;
+        	resetCrocTicks();
+        }
 	}
 	
 	public void resetFlyTicks() {
@@ -392,15 +420,6 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 
 	}
 	
-	public void playDeathSound(boolean inWater) {
-		if (inWater) {
-			plunk.play();
-		}
-		else {
-			squash.play();
-		}
-	}
-	
 	public void resetRound(boolean isDead, boolean inWater) {
 		//resets variables for the round
 		//takes care of frog death
@@ -413,31 +432,54 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 		else {
 			frog.newFrog();
 		}
-		flyTicks = 0;
-		fly.randomizePosition();
-		crocTicks = 501;
+		resetFlyTicks();
+		crocTicks = 501; //crocodile doesn't appear right when the round begins
 		time = 60 * 30;
 	}
 	
 	
 	public void resetLevel() {
+		//resets all variables
+		//points remains the same, level increases by one
 		resetRound(false, true);
 		lives = 3;
 		levelNum++;
 		wins = new boolean[5];
 		
-		createObstacles();
+		createRoadObstacles();
 		
 	}
 	
 	public void resetGame() {
+		//resets all variables
+		//high score remains the same
 		resetLevel();
 		points = 0;
 		levelNum= 1;
 		
 	}
 	
-	public void createObstacles() {
+	public void playDeathSound(boolean inWater) {
+		if (inWater) {
+			plunk.play();
+		}
+		else {
+			squash.play();
+		}
+	}
+	
+	public void removeHomeObstacles() {
+		//checks if fly and crocodile should be removed
+		if(flyTicks > 200) {
+			fly.remove();
+		}
+		if(crocTicks > 500) {
+			crocodile.remove();
+		}
+	}
+	
+	public void createRoadObstacles() {
+		//creates all cars and logs
 		cars = createCarLane(1);
 		for(int i = 2; i < 6; i++) {
 			cars.addAll(createCarLane(i));
@@ -452,8 +494,8 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	public ArrayList<Car> createCarLane(int laneNum) {
 		//create car objects
 		ArrayList<Car> lane = new ArrayList<Car>();
-		int carNum = rand.nextInt(1) + 2;
-		int carSpeed = rand.nextInt(3) + 2;
+		int carNum = 2; //cars per lane
+		int carSpeed = rand.nextInt(3) + 2; //random speed
 		for(int i = 0; i < carNum; i++) {
 			Car car = new Car(laneNum, laneNum * 47 + 63, batch, i, carSpeed);
 			lane.add(car);
@@ -464,9 +506,9 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	public ArrayList<Log> createLogLane(int laneNum) {
 		//create log objects
 		ArrayList<Log> lane = new ArrayList<Log>();
-		int logNum = rand.nextInt(1) + 2;
-		int logSpeed = rand.nextInt(3) + 2;
-		int logLength = rand.nextInt(3) + 4;
+		int logNum = 2; //logs per lane
+		int logSpeed = rand.nextInt(3) + 2; //random speed
+		int logLength = rand.nextInt(3) + 4; //random length
 		for(int i = 0; i < logNum; i++) {
 			Log log = new Log(laneNum, laneNum * 47 + 362, batch, i, logSpeed, logLength);
 			lane.add(log);

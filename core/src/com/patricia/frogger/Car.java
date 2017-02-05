@@ -1,3 +1,7 @@
+//Car.java
+//Patricia Liu
+////Contains all information and methods regarding the cars
+
 package com.patricia.frogger;
 
 import java.util.Random;
@@ -26,9 +30,9 @@ public class Car {
 		carImg = new Texture(Gdx.files.internal(fileName));
 		carSprite = new Sprite(carImg);
 		
-		int randomSpace = rand.nextInt(100) + 200;
+		int randomSpace = rand.nextInt(100) + 200; //determines the amount of space between each car
 		
-		headingRight =(type == 1 || type == 5);		
+		headingRight =(type == 1 || type == 5);	//cars in the specified lanes go right
 		
 		if(headingRight){
 			x = -10 + randomSpace * carNum;
