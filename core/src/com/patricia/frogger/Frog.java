@@ -9,18 +9,39 @@ public class Frog {
 	private Batch batch;
 	private int x;
 	private int y;
+	private int dx;
+	private int dy;
 	private int dyingSpeed;
 	private boolean isDead;
 	private Sprite frogSprite;
 	private Texture frogImg;
 	private Texture deathImg;
+	private Sprite[] frogSprites;
+	
+	private int spriteCount;
+	private int animationSpeed;
+	private int animationCount;
+	
+	private boolean isMoving;
 	
 	public Frog (Batch batch) {
 		this.batch = batch;
-		newFrog();
-		frogImg = new Texture(Gdx.files.internal("sprites/frog.png"));
-		frogSprite = new Sprite(frogImg, 0, 0, 27, 29);
+		
+		frogImg = new Texture(Gdx.files.internal("sprites/frogSprites.png"));
+		frogSprite = new Sprite(frogImg, 0, 0, 30, 32);
+
+		frogSprites = new Sprite[3];
+		frogSprites[0] = frogSprite;
+		frogSprites[1] = new Sprite(frogImg, 120, 2, 30, 23);
+		frogSprites[2] = new Sprite(frogImg, 62, 0, 25, 35);
+		
+		spriteCount = 0;
+		animationSpeed = 3;
+		animationCount = animationSpeed;
+		
 		deathImg = new Texture(Gdx.files.internal("sprites/death.png"));
+		
+		newFrog();
 		
 	}
 
@@ -52,47 +73,109 @@ public class Frog {
 		y = 65;
 		isDead = false;
 		dyingSpeed = 20;
+		dx = 0;
+		dy = 0;
+		rotateSprites(0f);
+		isMoving = false;
 	}
 	
-	public void moveLeft () {
-		frogSprite.setRotation(90f);
-		if (x - 72 > 0) {
-			x -= 72;
+	public boolean moveLeft () {
+		if (!isMoving) {
+			rotateSprites(90f);
+			
+			if (x - 72 > 0) {
+				spriteCount = 2;
+				dy = 0;
+				dx = -24;
+				x += dx;
+				y += dy;
+				return true;
+			}
 		}
+		return false;
 	}
 	
-	public void moveRight () {
-		frogSprite.setRotation(270f);
-		if (x + 72 < 650){
-			x += 72;
+	public boolean moveRight () {
+		if (!isMoving) {
+			rotateSprites(270f);
+			
+			if (x + 72 < 650){
+				spriteCount = 2;
+				dy = 0;
+				dx = 24;
+				x += dx;
+				y += dy;
+				return true;
+			}
 		}
+		return false;
 	}
 	
 	public boolean moveUp () {
-		frogSprite.setRotation(0f);
-		if (y + 48 < 650){
-			y += 48;
-			return true;
+		if (!isMoving) {
+			rotateSprites(0f);
+			
+			if (y + 48 < 650){
+				spriteCount = 2;
+				dy = 16;
+				dx = 0;
+				x += dx;
+				y += dy;
+				return true;
+			}
 		}
 		return false;
 	}
 	
 	public boolean moveDown () {
-		frogSprite.setRotation(180f);
-		if (y - 48 > 20){
-			y -= 48;
-			return true;
+		if (!isMoving) {
+			rotateSprites(180f);
+			
+			if (y - 48 > 30){
+				spriteCount = 2;
+				dy = -16;
+				dx = 0;
+				x += dx;
+				y += dy;
+				return true;
+			}
 		}
 		return false;
 	}
 	
+	public void rotateSprites (float angle) {
+		frogSprites[0].setRotation(angle);
+		frogSprites[1].setRotation(angle);
+		frogSprites[2].setRotation(angle);
+	}
+	
 	public void move () {
-		frogSprite.setPosition(x, y);
+		
+		if (spriteCount > 0) {
+			isMoving = true;
+			//batch.begin();
+			//frogSprites[spriteCount].draw(batch);
+			//batch.end();
+			animationCount--;
+			if (animationCount == 0) {
+				x += dx;
+				y += dy;
+				spriteCount--;
+				animationCount = animationSpeed;
+			}
+		}
+		else {
+			dx = 0;
+			dy = 0;
+			isMoving = false;
+		}
+		frogSprites[spriteCount].setPosition(x, y);
+		
 	}
 	
 	public void draw () {
 		batch.begin();
-		frogSprite.draw(batch);
+		frogSprites[spriteCount].draw(batch);
 		batch.end();
 	}
 	

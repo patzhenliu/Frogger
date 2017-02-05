@@ -108,27 +108,31 @@ public class Frogger extends ApplicationAdapter implements InputProcessor, Appli
 	
 	public void moveFrog() {
 		if (Gdx.input.isKeyJustPressed(Keys.LEFT)){
-			frog.moveLeft();			
-			hop.play();
+			if (frog.moveLeft()) {			
+				hop.play();
+			}
 		}
 		
 		else if (Gdx.input.isKeyJustPressed(Keys.RIGHT)){
-			frog.moveRight();
-			hop.play();
+			 if (frog.moveRight()) {
+				 hop.play();
+			 }
 		}
 		
 		else if (Gdx.input.isKeyJustPressed(Keys.UP)){
 			if (frog.moveUp()) {
 				points += 10;
+				hop.play();
 			}
-			hop.play();
+			
 		}
 		
 		else if (Gdx.input.isKeyJustPressed(Keys.DOWN)){
 			if (frog.moveDown()) {
 				points -= 10;
+				hop.play();
 			}
-			hop.play();
+			
 		}
 	}
 
